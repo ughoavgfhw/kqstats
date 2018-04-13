@@ -82,6 +82,30 @@ th:not(:nth-child(1)), td:not(:nth-child(1)) {
   padding-right: 4px;
 }
 
+.killboard.vertical {
+  position: relative;
+}
+
+.killboard.vertical .value {
+  position: absolute;
+  width: 92px;
+  font-size: 60pt;
+  text-align: right;
+  line-height: normal;
+}
+
+.killboard.vertical div.crowns {
+  position: absolute;
+  left: 0px;
+  height: 14px;
+  width: 93px;
+  direction: rtl;
+}
+.killboard.vertical div.crowns img.crown {
+  width: 30px;
+  padding-right: 1px;
+}
+
 .kill_stat {
   padding-left: 5px;
   position: relative;

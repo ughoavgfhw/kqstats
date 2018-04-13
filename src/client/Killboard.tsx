@@ -21,6 +21,8 @@ const goldBackground = require('./sprites/gold_team.png');
 const blueBackground = require('./sprites/blue_team.png');
 const goldBackgroundMirror = require('./sprites/gold_team_mirror.png');
 const blueBackgroundMirror = require('./sprites/blue_team_mirror.png');
+const goldBackgroundVertical = require('./sprites/gold_team_vertical.png');
+const blueBackgroundVertical = require('./sprites/blue_team_vertical.png');
 
 const queenCrown = require('./sprites/crown.png');
 const crownPixelArt = require('./sprites/crown_pixelart.png');
@@ -253,6 +255,101 @@ class KillboardHorizontal extends KillboardBase {
   }
 }
 
+class KillboardVertical extends KillboardBase {
+  props: KillboardHorizontalProps;
+
+  private alias: KillboardHorizontalAlias;
+
+  constructor(props: KillboardHorizontalProps) {
+    super(props);
+    if (props.mirror) {
+      throw 'vertical-mirrored is not supported!';
+    }
+    // Note: Blue and gold have opposite character orders.
+    if (props.team === 'blue') {
+      this.alias = {
+        background: blueBackgroundVertical,
+        position: {
+          [1]: Character.BlueChecks,
+          [2]: Character.BlueSkulls,
+          [3]: Character.BlueQueen,
+          [4]: Character.BlueAbs,
+          [5]: Character.BlueStripes
+        }
+      };
+    } else {
+      this.alias = {
+        background: goldBackgroundVertical,
+        position: {
+          [1]: Character.GoldStripes,
+          [2]: Character.GoldAbs,
+          [3]: Character.GoldQueen,
+          [4]: Character.GoldSkulls,
+          [5]: Character.GoldChecks
+        }
+      };
+    }
+  }
+
+  render() {
+    return (
+      <div className="killboard vertical">
+        <img src={this.alias.background} />
+        <div className="value" style={{top: '20px'}}>
+          {this.state[this.alias.position[1]].kills}
+        </div>
+        <div className="value" style={{top: '140px'}}>
+          {this.state[this.alias.position[1]].deaths}
+        </div>
+        <div className="value" style={{top: '276px'}}>
+          {this.state[this.alias.position[2]].kills}
+        </div>
+        <div className="value" style={{top: '396px'}}>
+          {this.state[this.alias.position[2]].deaths}
+        </div>
+        <div className="value" style={{top: '531px'}}>
+          {this.state[this.alias.position[3]].kills}
+        </div>
+        <div className="value" style={{top: '651px'}}>
+          {this.state[this.alias.position[3]].deaths}
+        </div>
+        <div className="value" style={{top: '788px'}}>
+          {this.state[this.alias.position[4]].kills}
+        </div>
+        <div className="value" style={{top: '908px'}}>
+          {this.state[this.alias.position[4]].deaths}
+        </div>
+        <div className="value" style={{top: '1044px'}}>
+          {this.state[this.alias.position[5]].kills}
+        </div>
+        <div className="value" style={{top: '1164px'}}>
+          {this.state[this.alias.position[5]].deaths}
+        </div>
+        <div className="crowns" style={{top: '20px'}}>
+          {getCrowns(this.state[this.alias.position[1]].queen_kills)}
+        </div>
+        <div className="crowns" style={{top: '275px'}}>
+          {getCrowns(this.state[this.alias.position[2]].queen_kills)}
+        </div>
+        <div className="crowns" style={{top: '532px'}}>
+          {getCrowns(this.state[this.alias.position[3]].queen_kills)}
+        </div>
+        <div className="crowns" style={{top: '788px'}}>
+          {getCrowns(this.state[this.alias.position[4]].queen_kills)}
+        </div>
+        <div className="crowns" style={{top: '1045px'}}>
+          {getCrowns(this.state[this.alias.position[5]].queen_kills)}
+        </div>
+      </div>
+    );
+  }
+
+  componentWillMount() {
+    super.componentWillMount();
+    document.body.style.backgroundColor = 'transparent';
+  }
+}
+
 export class Killboard extends React.Component<RouteComponentProps<{}>> {
   render() {
     return (
@@ -299,6 +396,26 @@ export class Killboard extends React.Component<RouteComponentProps<{}>> {
             <KillboardHorizontal
               team="gold"
               mirror={true}
+            />
+          )}
+        />
+        <Route
+          exact={true}
+          path={`${this.props.match.path}/vertical/blue`}
+          render={(props) => (
+            <KillboardVertical
+              team="blue"
+              mirror={false}
+            />
+          )}
+        />
+        <Route
+          exact={true}
+          path={`${this.props.match.path}/vertical/gold`}
+          render={(props) => (
+            <KillboardVertical
+              team="gold"
+              mirror={false}
             />
           )}
         />
