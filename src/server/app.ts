@@ -1,9 +1,13 @@
+import * as bodyParser from 'body-parser';
+import * as express from 'express';
 import * as fs from 'fs';
+import * as http from 'http';
 import * as os from 'os';
 import * as path from 'path';
 import * as socket_io from 'socket.io';
 import { KQStream, KQStreamOptions } from '../lib/KQStream';
 import { GameStats } from '../lib/GameStats';
+import { ScoreApi, TeamsApi } from '../overlay/server/api';
 
 if (process.argv.length !== 4) {
     throw new Error('Incorrect usage!');
@@ -33,7 +37,11 @@ if (process.argv[2] === '-r') {
     throw new Error('Invalid argument!');
 }
 
-const io = socket_io(8000);
+const app = express();
+app.use(bodyParser.json());
+const server = new http.Server(app);
+
+const io = socket_io(server);
 io.on('connection', (socket) => {
     const id = gameStats.on('change', (data) => {
         socket.emit('stat', data);
@@ -43,3 +51,8 @@ io.on('connection', (socket) => {
     });
     gameStats.trigger('change');
 });
+
+app.use('/api/scores', ScoreApi());
+app.use('/api/teams', TeamsApi());
+
+server.listen(8000);
