@@ -6,6 +6,7 @@ import { Page404 } from './client/404';
 import registerServiceWorker from './client/registerServiceWorker';
 import './client/index.css';
 import { ScoreControlView } from './overlay/client/ScoreControlView';
+import { OverlayView } from './overlay/client/OverlayView';
 
 class Home extends React.Component {
   render() {
@@ -41,6 +42,11 @@ ReactDOM.render(
         exact={true}
         path="/control/scores"
         component={ScoreControlView}
+      />
+      <Route
+        exact={true}
+        path="/overlay"
+        component={OverlayView}
       />
       <Route
         component={Page404}
