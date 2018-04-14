@@ -5,6 +5,7 @@ import { Killboard } from './client/Killboard';
 import { Page404 } from './client/404';
 import registerServiceWorker from './client/registerServiceWorker';
 import './client/index.css';
+import { ScoreControlView } from './overlay/client/ScoreControlView';
 
 class Home extends React.Component {
   render() {
@@ -35,6 +36,11 @@ ReactDOM.render(
       <Route
         path="/killboard"
         component={Killboard}
+      />
+      <Route
+        exact={true}
+        path="/control/scores"
+        component={ScoreControlView}
       />
       <Route
         component={Page404}
