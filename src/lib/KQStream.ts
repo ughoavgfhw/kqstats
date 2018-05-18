@@ -33,10 +33,20 @@ export interface PlayerKill {
     by: Character;
 }
 
+// This type is only used during compilation. Its purpose is to:
+// 1. Define the known event types, defined by the member names, and
+// 2. Set the value type used in callbacks, defined by the member types.
+type KQEventValueTypes = {
+    playernames: PlayerNames;
+    playerKill: PlayerKill;
+};
+
+export type KQEventType = keyof KQEventValueTypes;
+
 export type KQEventCallback<T> = (event: T) => any;
 
-interface KQEventCallbackDictionary<T> {
-    [id: string]: KQEventCallback<T>;
+interface KQEventCallbackDictionary<E extends KQEventType> {
+    [id: string]: KQEventCallback<KQEventValueTypes[E]>;
 }
 
 export interface KQStreamOptions {
@@ -47,7 +57,12 @@ export class KQStream {
     private client: websocket.client;
     private connection: websocket.connection;
 
-    private eventCallbacks: { [event: string]: KQEventCallbackDictionary<any> };
+    private eventCallbacks: {
+        // Entries are optional so that the constructor doesn't need to be
+        // updated when a new event is added. Instead, the dictionaries are
+        // created when they are first used.
+        [E in KQEventType]?: KQEventCallbackDictionary<E>;
+    };
 
     private log: stream.Writable;
 
@@ -97,17 +112,18 @@ export class KQStream {
         }
     }
 
-    on(eventType: 'playernames', callback: KQEventCallback<PlayerNames>): string;
-    on(eventType: 'playerKill', callback: KQEventCallback<PlayerKill>): string;
-    on(eventType: string, callback: KQEventCallback<any>): string {
+    on<E extends KQEventType>(
+        eventType: E, callback: KQEventCallback<KQEventValueTypes[E]>): string {
         if (this.eventCallbacks[eventType] === undefined) {
             this.eventCallbacks[eventType] = {};
         }
+        const callbacks =
+            this.eventCallbacks[eventType] as KQEventCallbackDictionary<E>;
         let id = uuid();
-        while (this.eventCallbacks[eventType][id] !== undefined) {
+        while (callbacks[id] !== undefined) {
             id = uuid();
         }
-        this.eventCallbacks[eventType][id] = callback;
+        callbacks[id] = callback;
         return id;
     }
 
@@ -123,18 +139,20 @@ export class KQStream {
      *          If no id is specified, true will be returned if there
      *          were any callbacks for the event type.
      */
-    off(eventType: string, id?: string): boolean {
+    off<E extends KQEventType>(eventType: E, id?: string): boolean {
         if (this.eventCallbacks[eventType] === undefined) {
             return false;
         }
+        const callbacks =
+            this.eventCallbacks[eventType] as KQEventCallbackDictionary<E>;
         let removed = false;
         if (id !== undefined) {
-            if (this.eventCallbacks[eventType][id] !== undefined) {
-                delete this.eventCallbacks[eventType][id];
+            if (callbacks[id] !== undefined) {
+                delete callbacks[id];
                 removed = true;
             }
         } else {
-            removed = Object.keys(this.eventCallbacks[eventType]).length > 0;
+            removed = Object.keys(callbacks).length > 0;
             this.eventCallbacks[eventType] = {};
         }
         return removed;
@@ -151,17 +169,6 @@ export class KQStream {
         }
         const [_, key, value] = dataArray;
 
-        const callbacks = this.eventCallbacks[key];
-        const ids: string[] = callbacks !== undefined ? Object.keys(callbacks)
-                                                      : [];
-
-        function send<T>(msg: T) {
-            for (let id of ids) {
-                const callback = callbacks[id] as KQEventCallback<T>;
-                callback(msg);
-            }
-        }
-
         switch (key) {
         case 'alive':
             this.sendMessageRaw('im alive', '');
@@ -169,7 +176,7 @@ export class KQStream {
         case 'playernames':
             // Not sure what the values of the message mean,
             // so just pass an empty object for now.
-            send<PlayerNames>({});
+            this.performCallbacks(key, {});
             break;
         case 'playerKill':
             const [x, y, by, killed] = value.split(',');
@@ -181,10 +188,20 @@ export class KQStream {
                 killed: Number(killed),
                 by: Number(by)
             };
-            send<PlayerKill>(playerKill);
+            this.performCallbacks(key, playerKill);
             break;
         default:
             break;
+        }
+    }
+
+    private performCallbacks<E extends KQEventType>(
+        eventType: E, value: KQEventValueTypes[E]): void {
+        if (this.eventCallbacks[eventType] === undefined) { return; }
+        const callbacks =
+            this.eventCallbacks[eventType] as KQEventCallbackDictionary<E>;
+        for (let id of Object.keys(callbacks)) {
+            callbacks[id](value);
         }
     }
 
