@@ -179,7 +179,7 @@ export class KQStream {
         if (this.log !== undefined) {
             this.log.write(`${Date.now().toString()},${message}\n`);
         }
-        const dataArray = message.match(/!\[k\[(.*?)\],v\[(.*)?\]\]!/);
+        const dataArray = message.match(/^!\[k\[(.*)\],v\[(.*)\]\]!$/);
         if (!dataArray) {
             console.warn('Could not parse message', message);
             return;
@@ -188,7 +188,7 @@ export class KQStream {
         let ids: string[] = [];
         switch (key) {
         case 'alive':
-            this.sendMessage('im alive', null);
+            this.sendMessageRaw('im alive', '');
             break;
         case 'playernames':
             ids = Object.keys(this.onPlayerNames);
@@ -222,10 +222,13 @@ export class KQStream {
         }
     }
 
-    private sendMessage(key: string, value: any): void {
+    private sendMessageJSON(key: string, value: any): void {
+        this.sendMessageRaw(key, JSON.stringify(value));
+    }
+
+    private sendMessageRaw(key: string, value: string): void {
         if (this.connection !== undefined) {
-            const valueString = JSON.stringify(value);
-            const message = `![k[${key}],v[${valueString}]]!`;
+            const message = `![k[${key}],v[${value}]]!`;
             const buffer = Buffer.from(message, 'utf8');
             this.connection.send(buffer);
         }
