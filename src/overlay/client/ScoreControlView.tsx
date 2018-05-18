@@ -27,8 +27,10 @@ function resetScoreboard () {
   fetch('/api/scores/reset', {method: 'POST'});
 
   (document.getElementById('seriesLength') as HTMLInputElement).value = '';
-  (document.getElementById('blueTeam') as HTMLInputElement).value = '';
-  (document.getElementById('goldTeam') as HTMLInputElement).value = '';
+  (document.getElementById('blueTeamSelect') as HTMLInputElement).value = '';
+  (document.getElementById('blueTeamOther') as HTMLInputElement).value = '';
+  (document.getElementById('goldTeamSelect') as HTMLInputElement).value = '';
+  (document.getElementById('goldTeamOther') as HTMLInputElement).value = '';
   (document.getElementById('blueScore') as HTMLInputElement).value = '';
   (document.getElementById('goldScore') as HTMLInputElement).value = '';
 }

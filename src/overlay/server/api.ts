@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as fs from 'fs';
+import { MatchState } from '../../lib/MatchState';
 
 interface ScoreMessage {
   seriesLength: number;
@@ -19,17 +20,33 @@ interface TeamsMessage {
   teams: Team[];
 }
 
-export const ScoreApi = () => {
+export interface ScoreApiCallbacks {
+  matchState: (state: MatchState) => void;
+  reset: () => void;
+}
+
+export const ScoreApi = (callbacks: ScoreApiCallbacks) => {
   const router = express.Router();
 
   router.post('/', (req, res) => {
     const input = req.body as ScoreMessage;
-    console.log(input);  // TODO
+    const state: MatchState = {
+      settings: { seriesLength: input.seriesLength },
+      currentTeams: {
+        ['blue']: { name: input.blueTeam },
+        ['gold']: { name: input.goldTeam },
+      },
+      scores: {
+        blue: input.score.blue,
+        gold: input.score.gold,
+      },
+    };
+    callbacks.matchState(state);
     res.sendStatus(200);
   });
 
   router.post('/reset', (req, res) => {
-    console.log('reset');  // TODO
+    callbacks.reset();
     res.sendStatus(200);
   });
 

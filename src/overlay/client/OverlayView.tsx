@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as socket_io_client from 'socket.io-client';
+import { CabColor, MatchScore, MatchSettings, MatchCurrentTeams } from '../../lib/MatchState';
 import './OverlayView.css';
 
 const background = require('./assets/overlay-background.jpg');
@@ -28,7 +29,7 @@ interface MatchState {
 }
 
 interface ScoreMarkerProps {
-  team: 'blue' | 'gold';
+  team: CabColor;
   score: number;
   seriesLength: number;
 }
@@ -38,7 +39,11 @@ const ScoreMarkers = (props: ScoreMarkerProps) => {
   for (let i = 0; i < winsNeeded; i++) {
     const status = i < props.score ? 'win' : 'empty';
     markers.push(
-        <img src={markerImages[status][props.team]} className={status} />);
+        <img
+          key={status + i}
+          src={markerImages[status][props.team]}
+          className={status}
+        />);
   }
   return (
     <div id={`${props.team}ScoreMarkers`} className="scoreMarkers">
@@ -48,7 +53,7 @@ const ScoreMarkers = (props: ScoreMarkerProps) => {
 };
 
 interface TeamDataProps {
-  id: 'blue' | 'gold';
+  id: CabColor;
   team: TeamState;
   match: MatchState;
 }
@@ -84,41 +89,36 @@ export class OverlayView extends React.Component {
     match: {seriesLength: 0},
   };
 
-  private scoreIO: SocketIOClient.Socket;
-  private teamsIO: SocketIOClient.Socket;
+  private io: SocketIOClient.Socket;
 
   constructor(props: {}) {
     super(props);
-    this.scoreIO = socket_io_client('/scores', {
+    this.io = socket_io_client('/match', {
       autoConnect: false
     });
-    this.scoreIO.on('score', (data: any) => {
-    this.setState((prevState: OverlayViewState) => {
+    this.io.on('score', (data: MatchScore) => {
+      this.setState((prevState: OverlayViewState) => {
         let teams = prevState.teams;
-        teams[data.team].score = data.score;
+        teams[data.cab].score = data.score;
         return {teams: teams};
       });
     });
-    this.scoreIO.on('match', (data: any) => {
+    this.io.on('settings', (data: MatchSettings) => {
       this.setState((prevState: OverlayViewState) => {
         let match = prevState.match;
         match.seriesLength = data.seriesLength;
         return {match: match};
       });
     });
-    this.scoreIO.open();
-    this.teamsIO = socket_io_client('/teams', {
-      autoConnect: false
-    });
-    this.teamsIO.on('currentTeams', (data: any) => {
+    this.io.on('teams', (data: MatchCurrentTeams) => {
       this.setState((prevState: OverlayViewState) => {
         let teams = prevState.teams;
-        teams.blue.teamName = data.blue.teamName;
-        teams.gold.teamName = data.gold.teamName;
+        teams.blue.teamName = data.blue.name || '';
+        teams.gold.teamName = data.gold.name || '';
         return {teams: teams};
       });
     });
-    this.teamsIO.open();
+    this.io.open();
   }
 
   render() {
