@@ -43,7 +43,7 @@ abstract class KillboardBase extends React.Component {
 
   constructor(props: {}) {
     super(props);
-    this.io = socket_io_client('http://localhost:8000', {
+    this.io = socket_io_client('/', {
       autoConnect: false
     });
     this.io.on('stat', (data: KQStat) => {
