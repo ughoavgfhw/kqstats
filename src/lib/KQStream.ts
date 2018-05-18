@@ -45,6 +45,27 @@ export type KQEventType = keyof KQEventValueTypes;
 
 export type KQEventCallback<T> = (event: T) => any;
 
+const eventDataGenerators: {
+    [E in KQEventType]: (data: string) => KQEventValueTypes[E];
+} = {
+    playernames: (data) => {
+        // Not sure what the values of the message mean,
+        // so just pass an empty object for now.
+        return {};
+    },
+    playerKill: (data) => {
+        const [x, y, by, killed] = data.split(',');
+        return {
+            pos: {
+                x: Number(x),
+                y: Number(y)
+            },
+            killed: Number(killed),
+            by: Number(by)
+        };
+    },
+};
+
 interface KQEventCallbackDictionary<E extends KQEventType> {
     [id: string]: KQEventCallback<KQEventValueTypes[E]>;
 }
@@ -173,24 +194,12 @@ export class KQStream {
         case 'alive':
             this.sendMessageRaw('im alive', '');
             break;
-        case 'playernames':
-            // Not sure what the values of the message mean,
-            // so just pass an empty object for now.
-            this.performCallbacks(key, {});
-            break;
-        case 'playerKill':
-            const [x, y, by, killed] = value.split(',');
-            const playerKill: PlayerKill = {
-                pos: {
-                    x: Number(x),
-                    y: Number(y)
-                },
-                killed: Number(killed),
-                by: Number(by)
-            };
-            this.performCallbacks(key, playerKill);
-            break;
         default:
+            if (key in eventDataGenerators) {
+                const eventType = key as KQEventType;
+                this.performCallbacks(eventType,
+                                      eventDataGenerators[eventType](value));
+            }
             break;
         }
     }
