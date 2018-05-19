@@ -7,68 +7,69 @@ import * as websocket from 'websocket';
 import * as stream from 'stream';
 import * as uuid from 'uuid/v4';
 
-export enum Character {
-    GoldQueen = 1,
-    BlueQueen = 2,
-    GoldStripes = 3,
-    BlueStripes = 4,
-    GoldAbs = 5,
-    BlueAbs = 6,
-    GoldSkulls = 7,
-    BlueSkulls = 8,
-    GoldChecks = 9,
-    BlueChecks = 10
-}
+type Partial<T> = { [P in keyof T]?: T[P] };
 
-export interface PlayerNames {}
-
-export interface Position {
-    x: number;
-    y: number;
-}
-
-export interface PlayerKill {
-    pos: Position;
-    killed: Character;
-    by: Character;
-}
-
-// This type is only used during compilation. Its purpose is to:
-// 1. Define the known event types, defined by the member names, and
-// 2. Set the value type used in callbacks, defined by the member types.
-type KQEventValueTypes = {
-    playernames: PlayerNames;
-    playerKill: PlayerKill;
+type Merger<T, P> = {
+    types: T;
+    parsers: P;
+    m: <K extends string, D>(this: { types: T; parsers: P; },
+                             _: { [k in K]: (_: string) => D; }) =>
+        Merger<T & { [k in K]: D; }, P & { [k in K]: (_: string) => D; }>;
 };
+function merge<T, P, K extends string, D>(t: { types: T; parsers: P; },
+                                          u: { [k in K]: (_: string) => D; }) {
+    type T2 = T & { [k in K]: D; };
+    type P2 = P & { [k in K]: (_: string) => D; };
+    let result: { types: Partial<T2>;
+                  parsers: Partial<P2>;
+    } & Merger<T, P> = t as Merger<T, P>;
+    for (let k of Object.keys(u)) {
+        result.parsers[k] = u[k];
+    }
+    return result as Merger<T2, P2>;
+}
+const merger = {
+    types: {},
+    parsers: {},
+    m: function<K extends string, D>(this: { types: {}; parsers: {}; },
+                                     other: { [k in K]: (_: string) => D; }) {
+        return merge(this, other);
+    }
+};
+
+// ***** Supported message type setup
+// This section controls which message types are parsed and sent to callbacks,
+// and what their parsed data types are. To add a new message type: define the
+// data type and parse function in another file, import it here, and add it to
+// the merger. The value merged in should be an object with a property whose
+// name matches the message name and value is a function that takes a string
+// and returns the parsed data type. Multiple event handlers may only be added
+// in the same object if they have the same data type. See below for examples.
+
+import { PlayerNames, parsePlayerNamesStreamMessage } from './stream_messages/PlayerNames';
+import { PlayerKill, parsePlayerKillStreamMessage } from './stream_messages/PlayerKill';
+
+const merged = merger.m(
+    { playernames: parsePlayerNamesStreamMessage }).m(
+    { playerKill: parsePlayerKillStreamMessage });
+
+// ***** End supported message type setup
+
+// Re-exporting types which used to be defined here.
+export type PlayerNames = PlayerNames;
+export type PlayerKill = PlayerKill;
+
+type KQEventValueTypes = typeof merged.types;
 
 export type KQEventType = keyof KQEventValueTypes;
 
 export type KQEventCallback<T> = (event: T) => any;
 
-const eventDataGenerators: {
-    [E in KQEventType]: (data: string) => KQEventValueTypes[E];
-} = {
-    playernames: (data) => {
-        // Not sure what the values of the message mean,
-        // so just pass an empty object for now.
-        return {};
-    },
-    playerKill: (data) => {
-        const [x, y, by, killed] = data.split(',');
-        return {
-            pos: {
-                x: Number(x),
-                y: Number(y)
-            },
-            killed: Number(killed),
-            by: Number(by)
-        };
-    },
-};
-
 interface KQEventCallbackDictionary<E extends KQEventType> {
     [id: string]: KQEventCallback<KQEventValueTypes[E]>;
 }
+
+const eventDataParsers = merged.parsers;
 
 export interface KQStreamOptions {
     log?: stream.Writable;
@@ -195,10 +196,10 @@ export class KQStream {
             this.sendMessageRaw('im alive', '');
             break;
         default:
-            if (key in eventDataGenerators) {
+            if (key in eventDataParsers) {
                 const eventType = key as KQEventType;
                 this.performCallbacks(eventType,
-                                      eventDataGenerators[eventType](value));
+                                      eventDataParsers[eventType](value));
             }
             break;
         }
