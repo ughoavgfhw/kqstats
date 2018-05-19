@@ -46,10 +46,13 @@ const merger = {
 // and returns the parsed data type. Multiple event handlers may only be added
 // in the same object if they have the same data type. See below for examples.
 
+import { parseActiveMatchStreamMessage } from './stream_messages/ActiveMatch';
 import { PlayerNames, parsePlayerNamesStreamMessage } from './stream_messages/PlayerNames';
 import { PlayerKill, parsePlayerKillStreamMessage } from './stream_messages/PlayerKill';
 
 const merged = merger.m(
+    { currentmatch: parseActiveMatchStreamMessage,
+      nextmatch: parseActiveMatchStreamMessage }).m(
     { playernames: parsePlayerNamesStreamMessage }).m(
     { playerKill: parsePlayerKillStreamMessage });
 
