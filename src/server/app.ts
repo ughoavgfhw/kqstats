@@ -75,4 +75,15 @@ app.use('/api/scores',
         }));
 app.use('/api/teams', TeamsApi());
 
+stream.on('currentmatch', (data) => {
+        match.setMatchState({
+                settings: { seriesLength: data.bestOf },
+                currentTeams: {
+                    blue: { name: data.teams[0] },
+                    gold: { name: data.teams[1] },
+                },
+                scores: { blue: data.scores[0], gold: data.scores[1] },
+            });
+    });
+
 server.listen(8000);
