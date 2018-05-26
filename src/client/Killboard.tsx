@@ -1,6 +1,6 @@
 import { Route, RouteComponentProps, Switch } from 'react-router';
 import * as socket_io_client from 'socket.io-client';
-import { Character } from '../lib/KQStream';
+import { Character } from '../lib/Character';
 import { GameStats, GameStatsType, KQStat } from '../lib/GameStats';
 import * as React from 'react';
 import { Page404 } from './404';

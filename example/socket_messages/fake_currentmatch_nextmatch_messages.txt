@@ -1,0 +1,14 @@
+1000,![k[alive],v[]]!
+10000,![k[currentmatch],v[{"id":"1","bestOf":"5","team1":"A","team2":"B","score1":"0","score2":"0","machineName":"kq","concluded":"False","warmup":"20","next1":"C","next2":"D"}]]!
+12000,![k[currentmatch],v[{"id":"1","bestOf":"5","team1":"A","team2":"B","score1":"0","score2":"1","machineName":"kq","concluded":"False","warmup":"20","next1":"C","next2":"D"}]]!
+14000,![k[currentmatch],v[{"id":"1","bestOf":"5","team1":"A","team2":"B","score1":"1","score2":"1","machineName":"kq","concluded":"False","warmup":"20","next1":"C","next2":"D"}]]!
+16000,![k[currentmatch],v[{"id":"1","bestOf":"5","team1":"A","team2":"B","score1":"2","score2":"1","machineName":"kq","concluded":"False","warmup":"20","next1":"C","next2":"D"}]]!
+18000,![k[currentmatch],v[{"id":"1","bestOf":"5","team1":"A","team2":"B","score1":"3","score2":"1","machineName":"kq","concluded":"True","warmup":"20","next1":"C","next2":"D"}]]!
+18100,![k[nextmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"0","score2":"0","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+20000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"0","score2":"0","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+22000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"1","score2":"0","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+23000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"1","score2":"1","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+24000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"2","score2":"1","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+26000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"2","score2":"2","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+28000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"2","score2":"3","machineName":"kq","concluded":"False","warmup":"20","next1":"","next2":""}]]!
+30000,![k[currentmatch],v[{"id":"2","bestOf":"7","team1":"C","team2":"D","score1":"2","score2":"4","machineName":"kq","concluded":"True","warmup":"20","next1":"","next2":""}]]!

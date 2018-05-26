@@ -1,5 +1,6 @@
 import * as uuid from 'uuid/v4';
-import { KQStream, Character, PlayerKill } from './KQStream';
+import { Character } from './Character';
+import { KQStream, PlayerKill } from './KQStream';
 
 type StatisticType = 'kills' | 'queen_kills' | 'warrior_kills' | 'deaths';
 

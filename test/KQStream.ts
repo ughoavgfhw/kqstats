@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import * as http from 'http';
 import * as websocket from 'websocket';
-import { KQStream, PlayerNames, PlayerKill, Character } from '../src/lib/KQStream';
+import { Character } from '../src/lib/Character';
+import { KQStream, PlayerNames, PlayerKill } from '../src/lib/KQStream';
 
 const KQ_PORT = 12749;
 

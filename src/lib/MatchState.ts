@@ -1,5 +1,5 @@
 import * as uuid from 'uuid/v4';
-import { Character } from './KQStream';
+import { Character } from './Character';
 
 export type CabColor = 'blue' | 'gold';
 
