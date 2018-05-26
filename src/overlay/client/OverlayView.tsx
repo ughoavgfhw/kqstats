@@ -1,23 +1,8 @@
 import * as React from 'react';
 import * as socket_io_client from 'socket.io-client';
 import { CabColor, MatchScore, MatchSettings, MatchCurrentTeams } from '../../lib/MatchState';
-import './OverlayView.css';
 
-const background = require('./assets/overlay-background.jpg');
-const blueEmptyMarker = require('./assets/score-marker-blue-empty.png');
-const blueWinMarker = require('./assets/score-marker-blue-win.png');
-const goldEmptyMarker = require('./assets/score-marker-gold-empty.png');
-const goldWinMarker = require('./assets/score-marker-gold-win.png');
-const markerImages = {
-  empty: {
-    blue: blueEmptyMarker,
-    gold: goldEmptyMarker,
-  },
-  win: {
-    blue: blueWinMarker,
-    gold: goldWinMarker,
-  },
-};
+import * as Config from './config/OverlayConfig';
 
 interface TeamState {
   teamName: string;
@@ -41,7 +26,8 @@ const ScoreMarkers = (props: ScoreMarkerProps) => {
     markers.push(
         <img
           key={status + i}
-          src={markerImages[status][props.team]}
+          id={`${props.team}Score${i}`}
+          src={Config.markerImages[status][props.team]}
           className={status}
         />);
   }
@@ -124,7 +110,7 @@ export class OverlayView extends React.Component {
   render() {
     return (
       <div>
-        <img src={background} />
+        <img id="overlayBackgroundImg" src={Config.backgroundImage} />
         <TeamData
           id="blue"
           team={this.state.teams.blue}
