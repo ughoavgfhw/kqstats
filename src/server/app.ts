@@ -9,6 +9,8 @@ import { KQStream, KQStreamOptions } from '../lib/KQStream';
 import { GameStats } from '../lib/GameStats';
 import { Match, MatchState } from '../lib/MatchState';
 import { ScoreApi, TeamsApi } from '../overlay/server/api';
+import { TwitchChatClient } from '../twitch/chat';
+import { TwitchSettingsApi } from '../twitch/SettingsApi';
 
 if (process.argv.length !== 4) {
     throw new Error('Incorrect usage!');
@@ -85,5 +87,25 @@ stream.on('currentmatch', (data) => {
                 scores: { blue: data.scores[0], gold: data.scores[1] },
             });
     });
+
+const chat = new TwitchChatClient();
+app.use('/api/twitch', TwitchSettingsApi(chat));
+stream.on('currentmatch', (data) => {
+    if (!data.concluded) { return; }
+    if (data.scores[0] > data.scores[1]) {
+        chat.broadcastMessage(`${data.teams[0]} defeats ${data.teams[1]}, ` +
+                              `${data.scores[0]} - ${data.scores[1]}`);
+    } else if (data.scores[1] > data.scores[0]) {
+        chat.broadcastMessage(`${data.teams[1]} defeats ${data.teams[0]}, ` +
+                              `${data.scores[1]} - ${data.scores[0]}`);
+    } else {
+        chat.broadcastMessage(`${data.teams[0]} and ${data.teams[1]} tie, ` +
+                              `${data.scores[0]} - ${data.scores[1]}`);
+    }
+    if (data.nextMatchTeams !== undefined) {
+        chat.broadcastMessage(`Next up: ${data.nextMatchTeams[0]} ` +
+                              `vs ${data.nextMatchTeams[1]}`);
+    }
+});
 
 server.listen(8000);

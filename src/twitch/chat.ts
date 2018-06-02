@@ -11,12 +11,26 @@ interface ChannelData {
 export class TwitchChatClient {
     private client: websocket.client = new websocket.client();
     private connection?: websocket.connection = undefined;
+    private connectedUsername: string;
     private channels: { [cd: string]: ChannelData; } = {};
 
     private postLoginHandler: (_?: any) => void;
     private loginTimeout: any;
 
+    public get connected(): boolean {
+        return this.connection !== undefined;
+    }
+
+    public get username(): string {
+        return this.connectedUsername;
+    }
+
+    public get channelNames(): string[] {
+        return Object.keys(this.channels);
+    }
+
     public async connect(username: string, password: string): Promise<void> {
+        this.connectedUsername = username;
         return new Promise<void>((resolve, reject) => {
             this.client.on('connectFailed', (err) => {
                 reject(err);
@@ -99,8 +113,10 @@ export class TwitchChatClient {
     }
 
     public broadcastMessage(message: string) {
+        const channels = Object.keys(this.channels);
+        if (channels.length === 0) { return; }
         // Note: This could send to channels which are still being joined.
-        this.sendMessage(Object.keys(this.channels).join(',#'), message);
+        this.sendMessage(channels.join(',#'), message);
     }
 
     private processMessage(message: string) {
