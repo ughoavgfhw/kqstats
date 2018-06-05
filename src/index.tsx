@@ -7,6 +7,7 @@ import registerServiceWorker from './client/registerServiceWorker';
 import './client/index.css';
 import { ScoreControlView } from './overlay/client/ScoreControlView';
 import { OverlayView } from './overlay/client/OverlayView';
+import { TwitchSettingsPage } from './twitch/SettingsPage';
 
 class Home extends React.Component {
   render() {
@@ -26,6 +27,16 @@ class Home extends React.Component {
   }
 }
 
+const Settings = (props: {}) => {
+  return (
+    <div>
+      <h1>Server Settings</h1>
+      <h2>Twitch</h2>
+      <TwitchSettingsPage/>
+    </div>
+  );
+};
+
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
@@ -37,6 +48,11 @@ ReactDOM.render(
       <Route
         path="/killboard"
         component={Killboard}
+      />
+      <Route
+        exact={true}
+        path="/control"
+        component={Settings}
       />
       <Route
         exact={true}
