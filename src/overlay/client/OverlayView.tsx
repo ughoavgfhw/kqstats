@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as socket_io_client from 'socket.io-client';
 import { CabColor, MatchScore, MatchSettings, MatchCurrentTeams } from '../../lib/MatchState';
 
-import * as Config from './config/OverlayConfig';
+import { BackgroundImage, ScoreMarkers, TeamName } from './config/OverlayConfig';
 
 interface TeamState {
   teamName: string;
@@ -13,44 +13,19 @@ interface MatchState {
   seriesLength: number;
 }
 
-interface ScoreMarkerProps {
-  team: CabColor;
-  score: number;
-  seriesLength: number;
-}
-const ScoreMarkers = (props: ScoreMarkerProps) => {
-  const markers: JSX.Element[] = [];
-  const winsNeeded = Math.ceil(props.seriesLength / 2);
-  for (let i = 0; i < winsNeeded; i++) {
-    const status = i < props.score ? 'win' : 'empty';
-    markers.push(
-        <img
-          key={status + i}
-          id={`${props.team}Score${i}`}
-          src={Config.markerImages[status][props.team]}
-          className={status}
-        />);
-  }
-  return (
-    <div id={`${props.team}ScoreMarkers`} className="scoreMarkers">
-      {markers}
-    </div>
-  );
-};
-
 interface TeamDataProps {
   id: CabColor;
   team: TeamState;
   match: MatchState;
 }
 const TeamData = (props: TeamDataProps) => {
+  const side = props.id === 'blue' ? 'left' : 'right';
   return (
     <div>
-      <div id={`${props.id}TeamName`} className="teamName">
-        {props.team.teamName}
-      </div>
+      <TeamName team={props.id} side={side} name={props.team.teamName} />
       <ScoreMarkers
         team={props.id}
+        side={side}
         score={props.team.score}
         seriesLength={props.match.seriesLength}
       />
@@ -110,7 +85,7 @@ export class OverlayView extends React.Component {
   render() {
     return (
       <div>
-        <img id="overlayBackgroundImg" src={Config.backgroundImage} />
+        <BackgroundImage/>
         <TeamData
           id="blue"
           team={this.state.teams.blue}
