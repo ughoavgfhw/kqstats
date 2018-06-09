@@ -6,7 +6,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as socket_io from 'socket.io';
 import { KQStream, KQStreamOptions } from '../lib/KQStream';
-import { GameStats } from '../lib/GameStats';
+import { GameStats, KQStat } from '../lib/GameStats';
 import { Match, MatchState } from '../lib/MatchState';
 import { ScoreApi, TeamsApi } from '../overlay/server/api';
 import { TwitchChatClient } from '../twitch/chat';
@@ -47,11 +47,12 @@ const server = new http.Server(app);
 
 const io = socket_io(server);
 io.on('connection', (socket) => {
-    const id = gameStats.on('change', (data) => {
+    const changeListener = (data: KQStat) => {
         socket.emit('stat', data);
-    });
+    };
+    const id = gameStats.on('change', changeListener);
     socket.on('disconnect', () => {
-        gameStats.off('change', id);
+        gameStats.removeListener('change', changeListener);
     });
     gameStats.trigger('change');
 });

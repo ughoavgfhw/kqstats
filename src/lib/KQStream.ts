@@ -3,6 +3,7 @@
  * https://github.com/arantius/kqdeathmap
  */
 
+import { ProtectedEventEmitter } from 'eventemitter-ts';
 import * as websocket from 'websocket';
 import * as stream from 'stream';
 import * as uuid from 'uuid/v4';
@@ -66,47 +67,31 @@ type KQEventValueTypes = typeof merged.types;
 
 export type KQEventType = keyof KQEventValueTypes;
 
-export type KQEventCallback<T> = (event: T) => any;
-
-interface KQEventCallbackDictionary<E extends KQEventType> {
-    [id: string]: KQEventCallback<KQEventValueTypes[E]>;
-}
-
 const eventDataParsers = merged.parsers;
 
 export interface KQStreamOptions {
     log?: stream.Writable;
 }
 
-export class KQStream {
-    private client: websocket.client;
+export class KQStream extends ProtectedEventEmitter<KQEventValueTypes> {
+    private options: KQStreamOptions;
     private connection: websocket.connection;
 
-    private eventCallbacks: {
-        // Entries are optional so that the constructor doesn't need to be
-        // updated when a new event is added. Instead, the dictionaries are
-        // created when they are first used.
-        [E in KQEventType]?: KQEventCallbackDictionary<E>;
-    };
-
-    private log: stream.Writable;
-
     constructor(options?: KQStreamOptions) {
-        this.eventCallbacks = {};
-        if (options !== undefined) {
-            if (options.log !== undefined) {
-                this.log = options.log;
-            }
+        super();
+        if (options === undefined) {
+            options = {};
         }
+        this.options = options;
     }
 
     async connect(host: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.client = new websocket.client();
-            this.client.on('connectFailed', (err) => {
+            const client = new websocket.client();
+            client.on('connectFailed', (err) => {
                 reject(err);
             });
-            this.client.on('connect', (connection) => {
+            client.on('connect', (connection) => {
                 this.connection = connection;
                 connection.on('message', (data) => {
                     if (data !== undefined && data.utf8Data !== undefined) {
@@ -116,7 +101,7 @@ export class KQStream {
                 });
                 resolve();
             });
-            this.client.connect(host);
+            client.connect(host);
         });
     }
 
@@ -137,55 +122,9 @@ export class KQStream {
         }
     }
 
-    on<E extends KQEventType>(
-        eventType: E, callback: KQEventCallback<KQEventValueTypes[E]>): string {
-        if (this.eventCallbacks[eventType] === undefined) {
-            this.eventCallbacks[eventType] = {};
-        }
-        const callbacks =
-            this.eventCallbacks[eventType] as KQEventCallbackDictionary<E>;
-        let id = uuid();
-        while (callbacks[id] !== undefined) {
-            id = uuid();
-        }
-        callbacks[id] = callback;
-        return id;
-    }
-
-    /**
-     * Removes the specified callback for a certain event,
-     * or all callbacks if no id is provided.
-     * 
-     * @param eventType The event type for which to remove callback(s)
-     * @param id The id of the callback to remove. If not specified,
-     *           all callbacks are removed.
-     * @returns True if callback(s) were removed. When an id is specified,
-     *          true will be returned if a callback existed for the id.
-     *          If no id is specified, true will be returned if there
-     *          were any callbacks for the event type.
-     */
-    off<E extends KQEventType>(eventType: E, id?: string): boolean {
-        if (this.eventCallbacks[eventType] === undefined) {
-            return false;
-        }
-        const callbacks =
-            this.eventCallbacks[eventType] as KQEventCallbackDictionary<E>;
-        let removed = false;
-        if (id !== undefined) {
-            if (callbacks[id] !== undefined) {
-                delete callbacks[id];
-                removed = true;
-            }
-        } else {
-            removed = Object.keys(callbacks).length > 0;
-            this.eventCallbacks[eventType] = {};
-        }
-        return removed;
-    }
-
     private processMessage(message: string): void {
-        if (this.log !== undefined) {
-            this.log.write(`${Date.now().toString()},${message}\n`);
+        if (this.options.log !== undefined) {
+            this.options.log.write(`${Date.now().toString()},${message}\n`);
         }
         const dataArray = message.match(/^!\[k\[(.*)\],v\[(.*)\]\]!$/);
         if (!dataArray) {
@@ -201,20 +140,10 @@ export class KQStream {
         default:
             if (key in eventDataParsers) {
                 const eventType = key as KQEventType;
-                this.performCallbacks(eventType,
-                                      eventDataParsers[eventType](value));
+                this.protectedEmit(eventType,
+                                   eventDataParsers[eventType](value));
             }
             break;
-        }
-    }
-
-    private performCallbacks<E extends KQEventType>(
-        eventType: E, value: KQEventValueTypes[E]): void {
-        if (this.eventCallbacks[eventType] === undefined) { return; }
-        const callbacks =
-            this.eventCallbacks[eventType] as KQEventCallbackDictionary<E>;
-        for (let id of Object.keys(callbacks)) {
-            callbacks[id](value);
         }
     }
 
