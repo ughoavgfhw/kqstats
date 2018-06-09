@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as socket_io from 'socket.io';
 import { KQStream, KQStreamOptions } from '../lib/KQStream';
 import { GameStats, KQStat } from '../lib/GameStats';
-import { Match, MatchState } from '../lib/MatchState';
+import { Match, MatchCurrentTeams, MatchScore, MatchSettings, MatchState } from '../lib/MatchState';
 import { ScoreApi, TeamsApi } from '../overlay/server/api';
 import { TwitchChatClient } from '../twitch/chat';
 import { TwitchSettingsApi } from '../twitch/SettingsApi';
@@ -57,18 +57,22 @@ io.on('connection', (socket) => {
     gameStats.trigger('change');
 });
 io.of('/match').on('connection', (socket) => {
-    const scoreId = match.on('score', (data) => socket.emit('score', data));
-    const settingsId = match.on('configured',
-                                (data) => socket.emit('settings', data));
-    const teamsId = match.on('teams', (data) => socket.emit('teams', data));
+    const scoreCallback = (data: MatchScore) => socket.emit('score', data);
+    const settingsCallback =
+        (data: MatchSettings) => socket.emit('settings', data);
+    const teamsCallback =
+        (data: MatchCurrentTeams) => socket.emit('teams', data);
+    match.on('score', scoreCallback);
+    match.on('configured', settingsCallback);
+    match.on('teams', teamsCallback);
     socket.on('disconnect', () => {
-        match.off('score', scoreId);
-        match.off('configured', settingsId);
-        match.off('teams', teamsId);
+        match.removeListener('score', scoreCallback);
+        match.removeListener('configured', settingsCallback);
+        match.removeListener('teams', teamsCallback);
     });
-    match.trigger('score', scoreId);
-    match.trigger('configured', settingsId);
-    match.trigger('teams', teamsId);
+    match.trigger('score');
+    match.trigger('configured');
+    match.trigger('teams');
 });
 
 app.use('/api/scores',
