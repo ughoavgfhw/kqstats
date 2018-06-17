@@ -80,7 +80,26 @@ app.use('/api/scores',
             matchState: (state: MatchState) => match.setMatchState(state),
             reset: () => match.reset(),
         }));
-app.use('/api/teams', TeamsApi());
+app.use('/api/teams',
+        TeamsApi({
+            getTeams: () => {
+                const teams: ({ name: string })[] = [];
+                if (fs.existsSync('teamNames.txt')) {
+                    const teamNames =
+                        fs.readFileSync('teamNames.txt', 'utf8').split('\n');
+                    if (teamNames.length > 0 &&
+                        teamNames[teamNames.length - 1] === '') {
+                        teamNames.pop();
+                    }
+                    console.log('Loaded ' + teamNames.length + ' team names');
+                    teamNames.forEach(
+                        (name: string) => teams.push({name: name}));
+                } else {
+                    console.log('No team names: teamNames.txt does not exist');
+                }
+                return teams;
+            }
+        }));
 
 stream.on('currentmatch', (data) => {
         match.setMatchState({
