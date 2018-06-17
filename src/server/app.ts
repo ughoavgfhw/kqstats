@@ -8,6 +8,7 @@ import * as socket_io from 'socket.io';
 import { KQStream, KQStreamOptions } from '../lib/KQStream';
 import { GameStats, KQStat } from '../lib/GameStats';
 import { Match, MatchCurrentTeams, MatchScore, MatchSettings, MatchState } from '../lib/MatchState';
+import { ParseTeamConfig } from '../lib/TournamentMetadata';
 import { ScoreApi, TeamsApi } from '../overlay/server/api';
 import { TwitchChatClient } from '../twitch/chat';
 import { TwitchSettingsApi } from '../twitch/SettingsApi';
@@ -83,21 +84,19 @@ app.use('/api/scores',
 app.use('/api/teams',
         TeamsApi({
             getTeams: () => {
-                const teams: ({ name: string })[] = [];
-                if (fs.existsSync('teamNames.txt')) {
-                    const teamNames =
-                        fs.readFileSync('teamNames.txt', 'utf8').split('\n');
-                    if (teamNames.length > 0 &&
-                        teamNames[teamNames.length - 1] === '') {
-                        teamNames.pop();
-                    }
-                    console.log('Loaded ' + teamNames.length + ' team names');
-                    teamNames.forEach(
-                        (name: string) => teams.push({name: name}));
+                if (fs.existsSync('teams.conf')) {
+                    return ParseTeamConfig(fs.readFileSync('teams.conf',
+                                                           'utf8'));
+                } else if (fs.existsSync('teamNames.txt')) {
+                    // The old format of just team names one per line is
+                    // compatible with the new config format, so reuse the
+                    // parser.
+                    return ParseTeamConfig(fs.readFileSync('teamNames.txt',
+                                                           'utf8'));
                 } else {
-                    console.log('No team names: teamNames.txt does not exist');
+                    console.log('No team names: teams.conf does not exist');
                 }
-                return teams;
+                return [];
             }
         }));
 
