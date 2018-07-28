@@ -1,0 +1,31 @@
+#root {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+}
+
+div.teamName {
+  width: 430px;
+  font-size: 24pt;
+  text-align: center;
+  position: absolute;
+  bottom: 60pt;
+}
+div#blueTeamName {
+  right: 55%;
+}
+div#goldTeamName {
+  left: 55%;
+}
+
+div.scoreMarkers {
+  font-size: 36pt;
+  position: absolute;
+  bottom: 10pt;
+}
+div#blueScoreMarkers {
+  right: 55%;
+}
+div#goldScoreMarkers {
+  left: 55%;
+}
