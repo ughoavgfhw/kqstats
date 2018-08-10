@@ -54,7 +54,7 @@ export class OverlayView extends React.Component {
 
   constructor(props: {}) {
     super(props);
-    this.io = socket_io_client('/match', {
+    this.io = socket_io_client(`${window.location.hostname}:8000/match`, {
       autoConnect: false
     });
     this.io.on('score', (data: MatchScore) => {
