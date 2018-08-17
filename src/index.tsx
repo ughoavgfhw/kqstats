@@ -5,6 +5,7 @@ import { Killboard } from './client/Killboard';
 import { Page404 } from './client/404';
 import registerServiceWorker from './client/registerServiceWorker';
 import './client/index.css';
+import { CommentatorView } from './overlay/client/CommentatorView';
 import { ScoreControlView } from './overlay/client/ScoreControlView';
 import { OverlayView } from './overlay/client/OverlayView';
 import { TeamPicturesView } from './overlay/client/TeamPicturesView';
@@ -69,6 +70,11 @@ ReactDOM.render(
         exact={true}
         path="/overlay/teams"
         component={TeamPicturesView}
+      />
+      <Route
+        exact={true}
+        path="/status"
+        component={CommentatorView}
       />
       <Route
         component={Page404}
