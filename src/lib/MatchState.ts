@@ -30,6 +30,7 @@ export interface MatchState {
     scores: {
         [cab in CabColor]: number;
     };
+    status: 'in_progress' | 'complete';
 }
 
 interface MatchEvents {
@@ -56,6 +57,7 @@ export class Match extends ProtectedEventEmitter<MatchEvents> {
                 blue: 0,
                 gold: 0,
             },
+            status: 'in_progress',
         };
     }
 
@@ -73,6 +75,11 @@ export class Match extends ProtectedEventEmitter<MatchEvents> {
         this.state.scores[cab] += 1;
         this.trigger('change');
         this.trigger('score', cab);
+    }
+
+    markComplete() {
+        this.state.status = 'complete';
+        this.trigger('change');
     }
 
     setMatchState(newState: MatchState) {

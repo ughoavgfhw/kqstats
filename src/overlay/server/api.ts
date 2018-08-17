@@ -39,6 +39,7 @@ export const ScoreApi = (callbacks: ScoreApiCallbacks) => {
         blue: input.score.blue,
         gold: input.score.gold,
       },
+      status: 'in_progress',
     };
     callbacks.matchState(state);
     res.sendStatus(200);

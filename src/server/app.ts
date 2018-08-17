@@ -128,6 +128,7 @@ stream.on('currentmatch', (data) => {
                     gold: { name: data.teams[1] },
                 },
                 scores: { blue: data.scores[0], gold: data.scores[1] },
+                status: data.concluded ? 'complete' : 'in_progress',
             });
     });
 
