@@ -111,6 +111,7 @@ app.use('/api/scores',
         ScoreApi({
             matchState: (state: MatchState) => match.setMatchState(state),
             reset: () => match.reset(),
+            endMatch: () => match.markComplete(),
         }));
 app.use('/api/teams',
         TeamsApi({

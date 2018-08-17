@@ -22,6 +22,7 @@ interface TeamsMessage {
 export interface ScoreApiCallbacks {
   matchState: (state: MatchState) => void;
   reset: () => void;
+  endMatch: () => void;
 }
 
 export const ScoreApi = (callbacks: ScoreApiCallbacks) => {
@@ -47,6 +48,11 @@ export const ScoreApi = (callbacks: ScoreApiCallbacks) => {
 
   router.post('/reset', (req, res) => {
     callbacks.reset();
+    res.sendStatus(200);
+  });
+
+  router.post('/end_match', (req, res) => {
+    callbacks.endMatch();
     res.sendStatus(200);
   });
 
