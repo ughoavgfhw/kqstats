@@ -1,0 +1,66 @@
+#teamPicturesView {
+  background: linear-gradient(185deg, rgb(50, 180, 255), rgb(50, 180, 255) 39%,
+                              rgb(255, 180, 0) 54%, rgb(255, 180, 0));
+  width: 1920px;
+  height: 1080px;
+}
+
+div.teamPictures {
+  width: 1920px;
+  height: 540px;
+  margin: 0px;
+}
+
+div.teamPicturesName {
+  font-size: 54px;
+  line-height: 54px;
+  height: 54px;
+  font-family: "Vermin Vibes 1989"
+}
+#blueTeamPicturesName {
+  position: relative;
+  top: 450px;
+  text-align: right;
+  padding-right: 975px;
+}
+#goldTeamPicturesName {
+  text-align: left;
+  padding-left: 975px;
+}
+
+div.playerPic {
+  display: inline-block;
+  width: 364px;
+  height: 453px;
+  margin: 3px 10px;
+  vertical-align: top;
+}
+#blueTeamPictures div.playerPic {
+  position: relative;
+  top: -54px;
+}
+
+img.playerPicImg {
+  border: solid 4px black;
+  width: 356px;
+  height: 356px;
+  border-radius: 8px;
+  object-fit: contain;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+div.playerPicName {
+  font-size: 30px;
+  text-align: center;
+}
+
+div#teamPicturesVsText {
+  position: absolute;
+  top: 495px;
+  left: 750px;
+  width: 420px;
+  text-align: center;
+  font-size: 54px;
+  line-height: 54px;
+  font-family: "Vermin Vibes 1989"
+}

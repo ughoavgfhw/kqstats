@@ -7,6 +7,7 @@ import registerServiceWorker from './client/registerServiceWorker';
 import './client/index.css';
 import { ScoreControlView } from './overlay/client/ScoreControlView';
 import { OverlayView } from './overlay/client/OverlayView';
+import { TeamPicturesView } from './overlay/client/TeamPicturesView';
 import { TwitchSettingsPage } from './twitch/SettingsPage';
 
 class Home extends React.Component {
@@ -63,6 +64,11 @@ ReactDOM.render(
         exact={true}
         path="/overlay"
         component={OverlayView}
+      />
+      <Route
+        exact={true}
+        path="/overlay/teams"
+        component={TeamPicturesView}
       />
       <Route
         component={Page404}
