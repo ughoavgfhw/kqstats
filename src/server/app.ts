@@ -13,6 +13,7 @@ import { TwitchChatClient } from '../twitch/chat';
 import { TwitchSettingsApi } from '../twitch/SettingsApi';
 import * as SocketData from './SocketData';
 import { TeamMap, TeamWatcher } from './TeamWatcher';
+import { UserMessageProducer } from './UserMessages';
 
 if (process.argv.length !== 4) {
     throw new Error('Incorrect usage!');
@@ -134,23 +135,14 @@ stream.on('currentmatch', (data) => {
     });
 
 const chat = new TwitchChatClient();
+const messageProducer = new UserMessageProducer((message) => {
+    console.info(message);
+    chat.broadcastMessage(message);
+});
+
 app.use('/api/twitch', TwitchSettingsApi(chat));
-stream.on('currentmatch', (data) => {
-    if (!data.concluded) { return; }
-    if (data.scores[0] > data.scores[1]) {
-        chat.broadcastMessage(`${data.teams[0]} defeats ${data.teams[1]}, ` +
-                              `${data.scores[0]} - ${data.scores[1]}`);
-    } else if (data.scores[1] > data.scores[0]) {
-        chat.broadcastMessage(`${data.teams[1]} defeats ${data.teams[0]}, ` +
-                              `${data.scores[1]} - ${data.scores[0]}`);
-    } else {
-        chat.broadcastMessage(`${data.teams[0]} and ${data.teams[1]} tie, ` +
-                              `${data.scores[0]} - ${data.scores[1]}`);
-    }
-    if (data.nextMatchTeams !== undefined) {
-        chat.broadcastMessage(`Next up: ${data.nextMatchTeams[0]} ` +
-                              `vs ${data.nextMatchTeams[1]}`);
-    }
+match.on('change', (state) => {
+    messageProducer.matchStateChanged(state);
 });
 
 server.listen(8000);
