@@ -22,6 +22,18 @@ if (process.env.ENV === 'development') {
     options.log = process.stdout;
 }
 
+function findTeamOrDefault(name: string | undefined,
+                           teamMap: TeamMap) {
+    if (name === undefined) {
+        return { name: '', players: [] };
+    }
+    const team = teamMap[name];
+    if (team !== undefined) {
+        return team;
+    }
+    return { name: name, players: [] };
+}
+
 const stream = new KQStream(options);
 const gameStats = new GameStats(stream);
 gameStats.start();
@@ -74,6 +86,20 @@ io.of('/match').on('connection', (socket) => {
     });
     match.trigger('score');
     match.trigger('configured');
+    match.trigger('teams');
+});
+io.of('/status').on('connection', (socket) => {
+    const teamsCallback =
+        (data: MatchCurrentTeams) => {
+        const teamMap = teams.get();
+        socket.emit('teams',
+                    { blue: findTeamOrDefault(data.blue.name, teamMap),
+                      gold: findTeamOrDefault(data.gold.name, teamMap) });
+    };
+    match.on('teams', teamsCallback);
+    socket.on('disconnect', () => {
+        match.removeListener('teams', teamsCallback);
+    });
     match.trigger('teams');
 });
 
