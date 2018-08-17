@@ -6,11 +6,12 @@ import * as os from 'os';
 import * as path from 'path';
 import * as socket_io from 'socket.io';
 import { KQStream, KQStreamOptions } from '../lib/KQStream';
-import { GameStats, KQStat } from '../lib/GameStats';
-import { Match, MatchCurrentTeams, MatchScore, MatchSettings, MatchState } from '../lib/MatchState';
+import { GameStats } from '../lib/GameStats';
+import { Match, MatchCurrentTeams, MatchState } from '../lib/MatchState';
 import { ScoreApi, TeamsApi } from '../overlay/server/api';
 import { TwitchChatClient } from '../twitch/chat';
 import { TwitchSettingsApi } from '../twitch/SettingsApi';
+import * as SocketData from './SocketData';
 import { TeamMap, TeamWatcher } from './TeamWatcher';
 
 if (process.argv.length !== 4) {
@@ -61,7 +62,7 @@ const server = new http.Server(app);
 
 const io = socket_io(server);
 io.on('connection', (socket) => {
-    const changeListener = (data: KQStat) => {
+    const changeListener = (data: SocketData.root_stat) => {
         socket.emit('stat', data);
     };
     const id = gameStats.on('change', changeListener);
@@ -71,11 +72,12 @@ io.on('connection', (socket) => {
     gameStats.trigger('change');
 });
 io.of('/match').on('connection', (socket) => {
-    const scoreCallback = (data: MatchScore) => socket.emit('score', data);
+    const scoreCallback =
+        (data: SocketData.match_score) => socket.emit('score', data);
     const settingsCallback =
-        (data: MatchSettings) => socket.emit('settings', data);
+        (data: SocketData.match_settings) => socket.emit('settings', data);
     const teamsCallback =
-        (data: MatchCurrentTeams) => socket.emit('teams', data);
+        (data: SocketData.match_teams) => socket.emit('teams', data);
     match.on('score', scoreCallback);
     match.on('configured', settingsCallback);
     match.on('teams', teamsCallback);
@@ -92,9 +94,11 @@ io.of('/status').on('connection', (socket) => {
     const teamsCallback =
         (data: MatchCurrentTeams) => {
         const teamMap = teams.get();
-        socket.emit('teams',
-                    { blue: findTeamOrDefault(data.blue.name, teamMap),
-                      gold: findTeamOrDefault(data.gold.name, teamMap) });
+        const payload: SocketData.status_teams = {
+            blue: findTeamOrDefault(data.blue.name, teamMap),
+            gold: findTeamOrDefault(data.gold.name, teamMap),
+        };
+        socket.emit('teams', payload);
     };
     match.on('teams', teamsCallback);
     socket.on('disconnect', () => {
