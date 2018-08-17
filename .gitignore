@@ -68,3 +68,7 @@ build
 
 # rubymine
 .idea
+
+# Configuration and user data
+public/photos
+teams.conf
