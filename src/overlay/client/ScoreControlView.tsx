@@ -23,6 +23,10 @@ function updateScoreboard () {
          body: JSON.stringify(score)});
 }
 
+function endMatch() {
+  fetch('/api/scores/end_match', {method: 'POST'});
+}
+
 function resetScoreboard () {
   fetch('/api/scores/reset', {method: 'POST'});
 
@@ -154,6 +158,7 @@ export class ScoreControlView extends React.Component {
         <button id="updateScore" onClick={updateScoreboard}>
           Update Scoreboard
         </button>
+        <button id="endMatch" onClick={endMatch}>Mark Match Complete</button>
         <hr />
         <button id="resetScore" onClick={resetScoreboard}>
           Reset Scoreboard
